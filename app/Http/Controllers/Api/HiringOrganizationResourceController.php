@@ -1,0 +1,145 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Models\Resource;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
+use App\Traits\CacheTrait;
+
+class HiringOrganizationResourceController extends Controller
+{
+    use CacheTrait;
+
+    public function index(Request $request, $contractor_id){
+        $contractors = $request->user()->role->company->contractors()->get();
+        $resources = [];
+        foreach ($contractors as $contractor) {
+            if ($contractor->id == $contractor_id) {
+                $resources = $contractor->resources()->get();
+                break;
+            }
+        }
+        return response(['resources' => $resources]);
+
+    }
+
+    public function getResources(Request $request){
+
+        // $this->validate($request, [
+        //     'facility_ids' => 'required|array',
+        //     ''
+        // ]);
+
+    }
+
+    public function show(Request $request, Resource $resource){
+        if (!$this->hasAccess($request->user(), $resource)){
+            return response('not authorized', 403);
+        }
+
+        $resource->load('admins.user', 'positions', 'contractors');
+
+        return response(['resource' => $resource]);
+    }
+
+    public function store(Request $request){
+
+        $company = $request->user()->role->company;
+
+        $this->validate($request, [
+            'name' => [
+                'required',
+                'string',
+            ]
+        ]);
+
+        // if ($company->facilities()->where('name', $request->get('name'))->exists()){
+        //     return response([
+        //         'errors' => [
+        //             'name' => [
+        //                 __('validation.unique', ['attribute' => 'name'])
+        //             ]
+        //         ]
+        //     ], 418);
+        // }
+
+        // $facility = $company->facilities()->create([
+        //     'name' => $request->get('name'),
+        //     'description' => $request->get('description'),
+        //     'notification_email' => $request->get('notification_email')
+        // ]);
+
+        // $request->user()->role->facilities()->attach($facility->id);
+
+        // Cache::tags([$this->getCompanyCacheTag($request->user()->role), $this->getHiringOrgCacheTag($company)])->flush();
+
+        return response(['resource' => []]);
+
+    }
+
+    // public function update(Request $request, Resource $facility){
+    //     $company = $request->user()->role->company;
+
+    //     $this->validate($request, [
+    //         'name' => [
+    //             'string'
+    //         ],
+    //         'description' => 'string',
+    //         'notification_email' => 'email'
+    //     ]);
+
+    //     if ($company->facilities()->where('name', $request->get('name'))->where('id', '!=', $facility->id)->exists()){
+    //         return response([
+    //             'errors' => [
+    //                 'name' => [
+    //                     __('validation.unique', ['attribute' => 'name'])
+    //                 ]
+    //             ]
+    //         ], 418);
+    //     }
+
+    //     if (!$this->hasAccess($request->user(), $facility)){
+    //         return response('not authorized', 403);
+    //     }
+
+    //     $facility->update($request->all());
+
+    //     Cache::tags([$this->getCompanyCacheTag($request->user()->role), $this->getHiringOrgCacheTag($company)])->flush();
+
+    //     return response(['facility' => $facility]);
+    // }
+
+    // public function destroy(Request $request, Facility $facility){
+    //     if (!$this->hasAccess($request->user(), $facility)){
+    //         return response('not authorized', 403);
+    //     }
+
+    //     $facility->admins()->detach();
+    //     $facility->positions()->detach();
+    //     $facility->contractors()->detach();
+
+    //     $facility->delete();
+
+    //     Cache::tags([$this->getCompanyCacheTag($request->user()->role), $this->getHiringOrgCacheTag($request->user()->role->company)])->flush();
+
+    //     return response('ok');
+    // }
+
+
+    // private function belongsToOrg($user, $facility){
+    //     return $user->role->entity_key === 'hiring_organization' && $facility->hiring_organization_id === $user->role->entity_id;
+    // }
+
+
+    // /**
+    //  * DEPRECATED this function used to determine if admin was assigned to facility, which is no longer a requirement
+    //  * @param $user
+    //  * @param $facility
+    //  * @return bool
+    //  */
+    // private function hasAccess($user, $facility){
+    //     return $this->belongsToOrg($user, $facility);
+    // }
+}

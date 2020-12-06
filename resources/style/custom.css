@@ -1,0 +1,17 @@
+.promotion{
+    background-color: #f69031;
+    margin: 0;
+    margin-bottom: 25px;
+    margin-top: 25px;
+    padding: 24px;
+    width: 100%;
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+}
+
+.promotion p {
+    color: white;
+    font-size: 15px;
+    text-align: center;
+}
